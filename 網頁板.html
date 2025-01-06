@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單位轉換器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>單位轉換器</h1>
+        <div class="form-group">
+            <label for="amount">輸入數量:</label>
+            <input type="number" id="amount" placeholder="輸入數量">
+        </div>
+        <div class="form-group">
+            <label for="unit">選擇單位:</label>
+            <select id="unit">
+                <option value="探幣">探幣</option>
+                <option value="探鑽">探鑽</option>
+                <option value="星星">星星</option>
+            </select>
+        </div>
+        <button onclick="calculate()">計算</button>
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const TAMB_TO_TAMZ = 14; // 1探幣 = 14探鑽
+        const TAMZ_TO_STAR = 10; // 1探鑽 = 10星星
+        const TWO_SONG_COST = 888; // 2-songlist cost in 探幣
+        const ONE_SONG_COST = 299; // 1-songlist cost in 探幣
+
+        function convertUnits(amount, fromUnit, toUnit) {
+            let baseAmount;
+
+            // Convert to 探幣 as base
+            if (fromUnit === "探幣") {
+                baseAmount = amount;
+            } else if (fromUnit === "探鑽") {
+                baseAmount = amount / TAMB_TO_TAMZ;
+            } else if (fromUnit === "星星") {
+                baseAmount = amount / (TAMB_TO_TAMZ * TAMZ_TO_STAR);
+            }
+
+            // Convert from base to target unit
+            if (toUnit === "探幣") {
+                return baseAmount;
+            } else if (toUnit === "探鑽") {
+                return baseAmount * TAMB_TO_TAMZ;
+            } else if (toUnit === "星星") {
+                return baseAmount * TAMB_TO_TAMZ * TAMZ_TO_STAR;
+            }
+        }
+
+        function calculateSonglists(tamb) {
+            const twoSongCount = Math.floor(tamb / TWO_SONG_COST);
+            let remaining = tamb % TWO_SONG_COST;
+
+            const oneSongCount = Math.floor(remaining / ONE_SONG_COST);
+            remaining %= ONE_SONG_COST;
+
+            return { twoSongCount, oneSongCount, remaining };
+        }
+
+        function calculate() {
+            const amount = parseFloat(document.getElementById("amount").value);
+            const unit = document.getElementById("unit").value;
+
+            if (isNaN(amount) || amount <= 0) {
+                alert("請輸入有效的數量");
+                return;
+            }
+
+            const tamb = convertUnits(amount, unit, "探幣");
+            const tamz = convertUnits(amount, unit, "探鑽");
+            const stars = convertUnits(amount, unit, "星星");
+
+            const { twoSongCount, oneSongCount, remaining } = calculateSonglists(tamb);
+
+            const resultDiv = document.getElementById("result");
+            resultDiv.style.display = "block";
+            resultDiv.innerHTML = `
+                <p><strong>轉換結果:</strong></p>
+                <p>探幣: ${tamb.toFixed(2)}</p>
+                <p>探鑽: ${tamz.toFixed(2)}</p>
+                <p>星星: ${stars.toFixed(2)}</p>
+                <br>
+                <p><strong>可購買歌單:</strong></p>
+                <p>兩首歌單: ${twoSongCount} 組</p>
+                <p>一首歌單: ${oneSongCount} 組</p>
+                <p>剩餘探幣: ${remaining.toFixed(2)}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
